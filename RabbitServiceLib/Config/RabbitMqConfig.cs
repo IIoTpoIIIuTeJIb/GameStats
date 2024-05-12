@@ -1,4 +1,4 @@
-﻿namespace GameStatisticsWebAPI.Config
+﻿namespace RabbitServiceLib.Config
 {
     public class RabbitMqConfig
     {

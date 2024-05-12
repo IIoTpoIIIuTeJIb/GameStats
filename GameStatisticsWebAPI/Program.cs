@@ -1,9 +1,9 @@
-
-using GameStatisticsWebAPI.Config;
+using RabbitServiceLib.Config;
 using System.Net;
 using System.Text.Json.Serialization;
+using RabbitServiceLib.Services;
 
-namespace GameStatisticsWebAPI
+namespace WebApiService
 {
     public class Program
     {
@@ -16,10 +16,6 @@ namespace GameStatisticsWebAPI
 
             builder.Services.AddSingleton<RabbitMqConnectionService>();
             builder.Services.AddSingleton<IHostedService, RabbitMqConnectionService>(serviceProvider => serviceProvider.GetService<RabbitMqConnectionService>());
-            //builder.Services.AddHostedService<RabbitMqConnectionService>();
-            //services.AddSingleton<ActorSystemBackgroundService>();
-            //services.AddSingleton<IHostedService, ActorSystemBackgroundService>(
-            //    serviceProvider => serviceProvider.GetService<ActorSystemBackgroundService>());
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {

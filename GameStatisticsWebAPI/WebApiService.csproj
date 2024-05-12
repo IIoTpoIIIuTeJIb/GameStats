@@ -14,11 +14,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\CommonLib\CommonLib.csproj">
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\RabbitServiceLib\RabbitServiceLib.csproj">
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CommonLib\CommonLib.csproj" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

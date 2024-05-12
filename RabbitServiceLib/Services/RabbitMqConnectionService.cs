@@ -1,10 +1,11 @@
-﻿using GameStatisticsWebAPI.Config;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitServiceLib.Config;
 using System.Threading.Channels;
 
-namespace GameStatisticsWebAPI
+namespace RabbitServiceLib.Services
 {
     public class RabbitMqConnectionService : IHostedService, IDisposable
     {
@@ -24,8 +25,8 @@ namespace GameStatisticsWebAPI
             {
                 throw new Exception("Невозможно создать соединение с брокером сообщений");
             }
-            Channel = Connection.CreateModel();
-            if (Connection is null)
+            Channel = CreateChannel(Connection);
+            if (Channel is null)
             {
                 throw new Exception("Невозможно создать канал с брокером сообщений");
             }
@@ -43,7 +44,7 @@ namespace GameStatisticsWebAPI
             ConnectionFactory factory = new ConnectionFactory()
             {
                 AutomaticRecoveryEnabled = rabbitConfig.RetryCount != 0 ? true : false,
-                HostName = "localhost",
+                HostName = "localhost", //TODO: Change to rabbitConfig.Host
                 //Port = rabbitConfig.Port,
                 UserName = rabbitConfig.Username,
                 Password = rabbitConfig.Password
@@ -86,7 +87,7 @@ namespace GameStatisticsWebAPI
             return Channel;
         }
 
-        private EventingBasicConsumer CreateConsumer(IModel channel, string queueName, Action<object, BasicDeliverEventArgs> action)
+        public EventingBasicConsumer CreateConsumer(IModel channel, string queueName, Action<object, BasicDeliverEventArgs> action)
         {
             if (action is null)
             {
@@ -100,16 +101,6 @@ namespace GameStatisticsWebAPI
 
         public void Dispose()
         {
-            if (Channel is not null)
-            {
-                Channel.Close();
-                Channel.Dispose();
-            }
-            if (Connection is not null)
-            {
-                Connection.Close();
-                Connection.Dispose();
-            }
         }
     }
 }
