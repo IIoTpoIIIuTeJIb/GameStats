@@ -1,6 +1,6 @@
 ﻿namespace DataAccessService.Config
 {
-    public class PostgresQlConfig
+    internal class PostgresQlConfig
     {
         public string DefaultConnection { get; set; } = string.Empty;
     }

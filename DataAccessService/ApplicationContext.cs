@@ -10,18 +10,17 @@ namespace DataAccessService
 {
     internal class ApplicationContext : DbContext
     {
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
+        {
+            Database.EnsureCreated();
+        }
+
         public DbSet<Game> Games { get; set; }
         public DbSet<Player> Players { get; set; }
-        public DbSet<PlayerStatistic> PlayerStatistics { get; set; }
+        public DbSet<PlayerStatistic> PlayerStats { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.UseSerialColumns();
-        }
-
-        public ApplicationContext(DbContextOptions<ApplicationContext> options ) : base(options) 
-        { 
-        }
-        
+        }        
     }
 }

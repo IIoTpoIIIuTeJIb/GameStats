@@ -14,51 +14,65 @@ namespace WebApiService.Controllers
     [Route("[controller]/[action]")]
     public class PlayerStatisticController : ControllerBase
     {
-        private readonly RabbitMqConnectionService rabbitService;
+        private readonly RabbitMqConnectionService _rabbitService;
+        string requestQueueName = "request";
+        string responseQueueName = "response";
         public PlayerStatisticController(RabbitMqConnectionService rabbitMqPublisherService)
         {
-            rabbitService = rabbitMqPublisherService;
-            if (rabbitService == null) 
+            _rabbitService = rabbitMqPublisherService;
+            if (_rabbitService == null) 
             {
-                throw new NullReferenceException(nameof(rabbitService));
+                throw new NullReferenceException(nameof(_rabbitService));
             }
         }
         [HttpGet("{playerName}")]
         public async Task<ActionResult<PlayerStatistic>> GetPlayerStatistic(string playerName)
         {
-            string requestQueueName = "request";
-            string responseQueueName = "response";
+            if (_rabbitService is null)
+            {
+                throw new NullReferenceException("Rabbit Service is null");
+            }
+            if (_rabbitService.Channel is null)
+            {
+                throw new NullReferenceException("Rabbit Channel is null");
+            }
             var correlationId = Guid.NewGuid().ToString();
-            var props = rabbitService.Channel.CreateBasicProperties();
+            var props = _rabbitService.Channel.CreateBasicProperties();
             props.CorrelationId = correlationId;
             props.ReplyTo = responseQueueName;
+            var wrapper = new RabbitWrapper();
+            wrapper.Message = "GET";
+            wrapper.Data = playerName;
 
-            var requestBody = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(playerName));
-            rabbitService.Channel.BasicPublish(
+            var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(wrapper));
+
+            _rabbitService.Channel.BasicPublish(
                 exchange: "",
                 mandatory: false,
                 routingKey: requestQueueName,
                 basicProperties: props,
-                body: requestBody);
+                body: body
+                );
 
-            var consumer = new EventingBasicConsumer(rabbitService.Channel);
-            rabbitService.Channel.BasicConsume(queue: responseQueueName, autoAck: false, consumer: consumer);
+            var consumer = new EventingBasicConsumer(_rabbitService.Channel);
 
-            PlayerStatistic? result = null;
+            PlayerStatsDTO? result = null;
 
             consumer.Received += (model, eventArgs) =>
             {
                 var responseProps = eventArgs.BasicProperties;
                 var responseCorrelationId = responseProps.CorrelationId;
-                if (null == correlationId)
+                if (responseCorrelationId == correlationId)
                 {
                     var responseBytes = eventArgs.Body.ToArray();
                     var responseMessage = Encoding.UTF8.GetString(responseBytes);
-                    var response = JsonConvert.DeserializeObject<PlayerStatistic>(responseMessage);
-                    result = response;
+                    var response = JsonConvert.DeserializeObject<RabbitWrapper>(responseMessage);
+
+                    result = response.Data as PlayerStatsDTO;
+                    _rabbitService.Channel.BasicAck(eventArgs.DeliveryTag, multiple: false);
                 }
-                rabbitService.Channel.BasicAck(eventArgs.DeliveryTag, multiple: false);
             };
+            _rabbitService.Channel.BasicConsume(queue: responseQueueName, autoAck: false, consumer: consumer);
 
             // Wait until the response is received or timeout after 5 seconds
             var timeout = DateTime.Now.AddSeconds(5);
@@ -80,15 +94,24 @@ namespace WebApiService.Controllers
         [HttpPatch]
         public async Task<ActionResult<PlayerStatistic>> UpdatePlayersStatistic([FromBody] GameResultDTO stats)
         {
-            var queue = "request";
+            if (_rabbitService is null)
+            {
+                throw new NullReferenceException("Rabbit Service is null");
+            }
+            if (_rabbitService.Channel is null)
+            {
+                throw new NullReferenceException("Rabbit Channel is null");
+            }
 
-            var props = rabbitService.Channel.CreateBasicProperties();
-
-            var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(stats));
-            rabbitService.Channel.BasicPublish(
+            var props = _rabbitService.Channel.CreateBasicProperties();
+            var wrapper = new RabbitWrapper();
+            wrapper.Message = "PATCH";
+            wrapper.Data = stats;
+            var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(wrapper));
+            _rabbitService.Channel.BasicPublish(
                 exchange: "",
                 mandatory: false,
-                routingKey: queue,
+                routingKey: requestQueueName,
                 basicProperties: props,
                 body: body);
 

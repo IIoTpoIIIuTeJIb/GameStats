@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using RabbitServiceLib.Config;
 using RabbitServiceLib.Services;
 using DataAccessService.Config;
+using Serilog;
 
 namespace DataAccessService
 {
@@ -22,10 +23,15 @@ namespace DataAccessService
             {
                 var configuration = hostContext.Configuration;
                 services.Configure<RabbitMqConfig>(configuration.GetSection("RabbitMQConf"));
-                services.Configure<PostgresQlConfig>(configuration.GetSection("ConnectionStrings"));
+                services.Configure<SQLiteConfig>(configuration.GetSection("SQLiteConnectionStrings"));
+                services.AddDbContext<ApplicationContext>(options =>
+                    options.UseSqlite(configuration.GetConnectionString("DefaultConnection") ) );
+                services.AddSingleton<RabbitMqConnectionService>();
+                services.AddSingleton<IHostedService, RabbitMqConnectionService>(serviceProvider => serviceProvider.GetService<RabbitMqConnectionService>());
                 services.AddHostedService<DatabaseAccessService>();
-                services.AddHostedService<RabbitMqConnectionService>();
-                services.AddDbContext<ApplicationContext>();
+                services.AddSingleton<DatabaseAccessService>();
+                services.AddHostedService<MessageHandlerService>();
+                services.AddSingleton<MessageHandlerService>();
             }
         );
         }
