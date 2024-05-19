@@ -6,10 +6,13 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiService", "WebApiService.csproj", "{5037D8E7-3606-478F-8D02-5F3C934D6F71}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccessService", "..\DataAccessService\DataAccessService.csproj", "{DA0FFCC1-E928-454E-98D8-5B4CB2BADCA4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5037D8E7-3606-478F-8D02-5F3C934D6F71} = {5037D8E7-3606-478F-8D02-5F3C934D6F71}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonLib", "..\CommonLib\CommonLib.csproj", "{82883B10-E4C1-47D1-8F90-D1FFA46684DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitServiceLib", "..\RabbitServiceLib\RabbitServiceLib.csproj", "{708C2E55-30B4-4BA5-A239-7F22914A3B64}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitServiceLib", "..\RabbitServiceLib\RabbitServiceLib.csproj", "{708C2E55-30B4-4BA5-A239-7F22914A3B64}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

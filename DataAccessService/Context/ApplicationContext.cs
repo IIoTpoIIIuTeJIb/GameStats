@@ -18,9 +18,5 @@ namespace DataAccessService
         public DbSet<Game> Games { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<PlayerStatistic> PlayerStats { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-        }        
     }
 }

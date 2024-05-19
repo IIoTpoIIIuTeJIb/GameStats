@@ -25,13 +25,12 @@ namespace DataAccessService
                 services.Configure<RabbitMqConfig>(configuration.GetSection("RabbitMQConf"));
                 services.Configure<SQLiteConfig>(configuration.GetSection("SQLiteConnectionStrings"));
                 services.AddDbContext<ApplicationContext>(options =>
-                    options.UseSqlite(configuration.GetConnectionString("DefaultConnection") ) );
+                //options.UseSqlite(configuration.GetConnectionString("DefaultConnection"))); 
+                options.UseSqlite("Data Source=gamestatistic.db")); //Data Source=c:\\gamestatistic.db
+                services.AddScoped<DatabaseAccessService>();
                 services.AddSingleton<RabbitMqConnectionService>();
                 services.AddSingleton<IHostedService, RabbitMqConnectionService>(serviceProvider => serviceProvider.GetService<RabbitMqConnectionService>());
-                services.AddHostedService<DatabaseAccessService>();
-                services.AddSingleton<DatabaseAccessService>();
                 services.AddHostedService<MessageHandlerService>();
-                services.AddSingleton<MessageHandlerService>();
             }
         );
         }

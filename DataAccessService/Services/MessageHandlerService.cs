@@ -48,14 +48,14 @@ namespace DataAccessService.Services
         {
 
             var consumer = new EventingBasicConsumer(_rabbitService.Channel);
-            consumer.Received += onMessageReceived;
+            consumer.Received += OnMessageReceived;
             while (true)
             {
                 _rabbitService.Channel.BasicConsume(queue: requestQueueName, autoAck: false, consumer: consumer);
             }
         }
 
-        private void onMessageReceived(object? model, BasicDeliverEventArgs e)
+        private void OnMessageReceived(object? model, BasicDeliverEventArgs e)
         {
             var props = e.BasicProperties;
             //TODO: process request
@@ -71,13 +71,9 @@ namespace DataAccessService.Services
             {
                 case "GET":
                     var result = _dataService.Get((string)wrapper.Data);
-                    var responseWrapper = new RabbitWrapper
-                    {
-                        Message = "Response",
-                        Data = result
-                    };
-                    var responseBody = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseWrapper));
+                    var responseBody = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(result));
                     var propsResponse = _rabbitService.Channel.CreateBasicProperties();
+                    propsResponse.CorrelationId = props.CorrelationId;
                     _rabbitService.Channel.BasicPublish(exchange: "", routingKey: responseQueueName, basicProperties: propsResponse, body: responseBody);
                     break;
                 case "PATCH":
@@ -92,7 +88,6 @@ namespace DataAccessService.Services
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            // Clean up any resources here
             return Task.CompletedTask;
         }
     }

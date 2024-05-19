@@ -25,8 +25,9 @@ namespace WebApiService.Controllers
                 throw new NullReferenceException(nameof(_rabbitService));
             }
         }
+
         [HttpGet("{playerName}")]
-        public async Task<ActionResult<PlayerStatistic>> GetPlayerStatistic(string playerName)
+        public ActionResult<PlayerStatsDTO> GetPlayerStatistic(string playerName)
         {
             if (_rabbitService is null)
             {
@@ -57,29 +58,35 @@ namespace WebApiService.Controllers
             var consumer = new EventingBasicConsumer(_rabbitService.Channel);
 
             PlayerStatsDTO? result = null;
-
-            consumer.Received += (model, eventArgs) =>
+            EventHandler<BasicDeliverEventArgs> handler = (model, eventArgs) =>
             {
                 var responseProps = eventArgs.BasicProperties;
                 var responseCorrelationId = responseProps.CorrelationId;
-                if (responseCorrelationId == correlationId)
+                if (true)//responseCorrelationId == correlationId)
                 {
                     var responseBytes = eventArgs.Body.ToArray();
                     var responseMessage = Encoding.UTF8.GetString(responseBytes);
-                    var response = JsonConvert.DeserializeObject<RabbitWrapper>(responseMessage);
-
-                    result = response.Data as PlayerStatsDTO;
-                    _rabbitService.Channel.BasicAck(eventArgs.DeliveryTag, multiple: false);
+                    var response = JsonConvert.DeserializeObject<PlayerStatsDTO>(responseMessage);
+                    if (response == null)
+                    {
+                        throw new NullReferenceException("Response is null");
+                    }
+                    result = response;
+                    Console.WriteLine(result);
                 }
+                Console.WriteLine("corr ID" + correlationId);
+                Console.WriteLine("response corr ID" + responseCorrelationId);
             };
-            _rabbitService.Channel.BasicConsume(queue: responseQueueName, autoAck: false, consumer: consumer);
+            consumer.Received += handler;
+            _rabbitService.Channel.BasicConsume(queue: responseQueueName, autoAck: true, consumer: consumer);
 
-            // Wait until the response is received or timeout after 5 seconds
-            var timeout = DateTime.Now.AddSeconds(5);
+
+            var timeout = DateTime.Now.AddSeconds(3);
             while (result == null && DateTime.Now < timeout)
             {
                 Thread.Sleep(100);
             }
+            consumer.Received -= handler;
 
             if (result != null)
             {
@@ -87,12 +94,12 @@ namespace WebApiService.Controllers
             }
             else
             {
-                return NotFound();
+                return NotFound(result);
             }
         }
 
         [HttpPatch]
-        public async Task<ActionResult<PlayerStatistic>> UpdatePlayersStatistic([FromBody] GameResultDTO stats)
+        public async Task<ActionResult<GameResultDTO>> UpdatePlayersStatistic([FromBody] GameResultDTO stats)
         {
             if (_rabbitService is null)
             {
