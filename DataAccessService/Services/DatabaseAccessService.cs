@@ -1,8 +1,4 @@
 ﻿using Common.DTO;
-using Common.Models;
-using DataAccessService.Config;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 
 namespace DataAccessService.Services
 {

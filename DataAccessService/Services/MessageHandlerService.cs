@@ -1,15 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using RabbitServiceLib.Services;
-using System.Diagnostics.Tracing;
-using Common.Models;
 using Newtonsoft.Json;
 using Common.DTO;
 
@@ -77,7 +70,10 @@ namespace DataAccessService.Services
                     _rabbitService.Channel.BasicPublish(exchange: "", routingKey: responseQueueName, basicProperties: propsResponse, body: responseBody);
                     break;
                 case "PATCH":
-                    _dataService.Patch((GameResultDTO)wrapper.Data);
+                    if (wrapper.Data is GameResultDTO)
+                    {
+                        _dataService.Patch((GameResultDTO)wrapper.Data);
+                    }
                     break;
                 default:
                     break;

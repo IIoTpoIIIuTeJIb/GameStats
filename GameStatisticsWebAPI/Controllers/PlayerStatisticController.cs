@@ -1,11 +1,9 @@
-﻿using Common.Models;
-using Common.DTO;
+﻿using Common.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
-using System.Threading.Channels;
 using RabbitServiceLib.Services;
 
 namespace WebApiService.Controllers

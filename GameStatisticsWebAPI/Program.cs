@@ -1,5 +1,4 @@
 using RabbitServiceLib.Config;
-using System.Net;
 using System.Text.Json.Serialization;
 using RabbitServiceLib.Services;
 

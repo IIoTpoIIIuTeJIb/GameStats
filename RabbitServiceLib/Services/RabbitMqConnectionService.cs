@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitServiceLib.Config;
-using System.Threading.Channels;
 
 namespace RabbitServiceLib.Services
 {
