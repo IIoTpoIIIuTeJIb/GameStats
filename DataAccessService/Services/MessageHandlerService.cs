@@ -51,7 +51,6 @@ namespace DataAccessService.Services
         private void OnMessageReceived(object? model, BasicDeliverEventArgs e)
         {
             var props = e.BasicProperties;
-            //TODO: process request
             var body = e.Body.ToArray();
             var jsonBody = Encoding.UTF8.GetString(body);
             var wrapper = JsonConvert.DeserializeObject<RabbitWrapper>(jsonBody);

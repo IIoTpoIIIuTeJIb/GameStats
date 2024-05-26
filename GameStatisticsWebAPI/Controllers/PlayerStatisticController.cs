@@ -60,7 +60,7 @@ namespace WebApiService.Controllers
             {
                 var responseProps = eventArgs.BasicProperties;
                 var responseCorrelationId = responseProps.CorrelationId;
-                if (true)//responseCorrelationId == correlationId)
+                if (responseCorrelationId == correlationId)
                 {
                     var responseBytes = eventArgs.Body.ToArray();
                     var responseMessage = Encoding.UTF8.GetString(responseBytes);
@@ -70,10 +70,7 @@ namespace WebApiService.Controllers
                         throw new NullReferenceException("Response is null");
                     }
                     result = response;
-                    Console.WriteLine(result);
                 }
-                Console.WriteLine("corr ID" + correlationId);
-                Console.WriteLine("response corr ID" + responseCorrelationId);
             };
             consumer.Received += handler;
             _rabbitService.Channel.BasicConsume(queue: responseQueueName, autoAck: true, consumer: consumer);
